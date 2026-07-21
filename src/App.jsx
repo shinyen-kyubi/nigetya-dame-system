@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { sounds } from './services/soundEffects';
 import { PILOTS, runDiscussion, logDecisionToChipHistory, CHIP_HISTORY_PATH } from './services/discussionEngine';
-import { AlertTriangle, Flame, ShieldAlert, Cpu, History, Volume2, VolumeX, Send, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Flame, ShieldAlert, Cpu, History, Volume2, VolumeX, Key, Sparkles, RefreshCw } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function App() {
   const [topic, setTopic] = useState('');
+  const [apiKey, setApiKey] = useState(localStorage.getItem('GEMINI_API_KEY') || '');
+  const [showKeyInput, setShowKeyInput] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeTab, setActiveTab] = useState('SYSTEM'); // 'SYSTEM' | 'HISTORY'
   const [currentResult, setCurrentResult] = useState(null);
@@ -15,30 +17,30 @@ export default function App() {
 
   const chatEndRef = useRef(null);
 
-  // コンポーネントマウント時にサウンド初期化準備
   useEffect(() => {
     fetchHistoryText();
   }, []);
 
-  // リアルタイムログスクロール
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [visibleLogs]);
 
-  // チップくんの歴史.txt のダミー/実際のテキスト読み込み表示
+  const handleSaveApiKey = (key) => {
+    setApiKey(key);
+    localStorage.setItem('GEMINI_API_KEY', key);
+  };
+
   const fetchHistoryText = () => {
-    // 画面上でチップくんの歴史をシミュレート表示
     const sampleHistory = `---
 ## 🚀 第15章: 逃げちゃダメシステム (nigetya-dame-system) の立ち上げ (2026-07-21)
-- **目的**: ユーザーが投げかけたお題・悩みに応対し、シンジ・綾波・アスカの3つの思考AIが激しく議論・掛け合いを展開するエヴァンゲリオンMAGI風パロディWebエンタメシステムを構築する。
-- **技術スタック**: React, Vite, HTML5 Canvas, Web Audio API, MAGI Monitor CSS
+- **目的**: シンジ・綾波・アスカの3つの思考AIが激しく議論・掛け合いを展開するエヴァンゲリオンMAGI風パロディWebエンタメシステム。
+- **AIエンジン**: Gemini 1.5 Flash API (1 Key 3 Persona) & Simulation Engine
 - **共有ファイルパス**: ${CHIP_HISTORY_PATH}
 - **自動同期ステータス**: ACTIVE (NotebookLM Realtime Sync)
 `;
     setChipHistoryText(sampleHistory);
   };
 
-  // 審議（討論）開始
   const handleStartDeliberation = async (e) => {
     e.preventDefault();
     if (!topic.trim() || isAnalyzing) return;
@@ -51,8 +53,8 @@ export default function App() {
     setCurrentResult(null);
     setVisibleLogs([]);
 
-    // 1. 討論の実行ロジック呼び出し
-    const result = await runDiscussion(topic);
+    // 1. Gemini API / シミュレーション論理呼び出し
+    const result = await runDiscussion(topic, apiKey);
 
     // 2. 対話ストリームの再生演出
     for (let i = 0; i < result.logs.length; i++) {
@@ -77,7 +79,6 @@ export default function App() {
       }
     }
 
-    // 4. チップくんの歴史へ自動ログ追記（Rule 3）
     logDecisionToChipHistory(topic, result);
   };
 
@@ -89,14 +90,28 @@ export default function App() {
           <ShieldAlert className="w-10 h-10 text-red-500 animate-pulse" />
           <div>
             <h1 className="glitch-title">逃げちゃダメシステム</h1>
-            <p className="text-xs text-amber-500/80 tracking-widest font-mono">
-              MAGI SYSTEM PARODY v6.01 // PILOTS: SHINJI-01 / AYANAMI-00 / ASUKA-02
+            <p className="text-xs text-amber-500/80 tracking-widest font-mono flex items-center gap-2">
+              MAGI SYSTEM PARODY v6.01 
+              {apiKey ? (
+                <span className="text-emerald-400 font-bold bg-emerald-950/80 px-2 py-0.5 border border-emerald-500/50 rounded flex items-center gap-1">
+                  <Sparkles className="w-3 h-3" /> REAL GEMINI AI ACTIVE
+                </span>
+              ) : (
+                <span className="text-amber-500/60 font-bold">SIMULATION MODE</span>
+              )}
             </p>
           </div>
         </div>
 
         {/* コントロール＆タブ切替 */}
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowKeyInput(!showKeyInput)}
+            className="px-3 py-2 text-xs font-bold border border-amber-500/60 text-amber-400 hover:bg-amber-500/20 flex items-center gap-1"
+            title="Gemini APIキー設定"
+          >
+            <Key className="w-4 h-4" /> {apiKey ? 'APIキー登録済' : 'Gemini API連携'}
+          </button>
           <button
             onClick={() => setActiveTab('SYSTEM')}
             className={`px-4 py-2 text-sm font-bold border ${activeTab === 'SYSTEM' ? 'bg-amber-500 text-black border-amber-500' : 'border-amber-500/50 text-amber-500'}`}
@@ -119,6 +134,36 @@ export default function App() {
         </div>
       </header>
 
+      {/* Gemini APIキー設定ポップアップ */}
+      {showKeyInput && (
+        <div className="max-w-6xl mx-auto mb-6 p-4 bg-neutral-900 border-2 border-amber-500 font-mono text-sm">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-amber-400 font-bold flex items-center gap-2">
+              <Key className="w-4 h-4" /> Gemini API キー設定 (1キーで3キャラ同時起動)
+            </span>
+            <button onClick={() => setShowKeyInput(false)} className="text-xs text-gray-400 hover:text-white">閉じる ✖</button>
+          </div>
+          <p className="text-xs text-gray-300 mb-3">
+            Google AI Studioの無料APIキーを入力すると、Gemini 1.5 Flashがシンジ・綾波・アスカの3人のAIとしてリアルタイム思考・議論を展開します。未入力時は超高速シミュレーションモード動作となります。
+          </p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="AIzaSy... (Gemini API Key)"
+              value={apiKey}
+              onChange={(e) => handleSaveApiKey(e.target.value)}
+              className="text-sm p-2 bg-black border border-amber-500/70 text-white flex-1"
+            />
+            <button
+              onClick={() => setShowKeyInput(false)}
+              className="px-4 py-2 bg-amber-500 text-black font-bold text-xs hover:bg-amber-400"
+            >
+              保存して完了
+            </button>
+          </div>
+        </div>
+      )}
+
       <main className="max-w-6xl mx-auto">
         {activeTab === 'SYSTEM' ? (
           <>
@@ -128,7 +173,7 @@ export default function App() {
                 <span className="inline-block w-3 h-3 rounded-full bg-red-600 animate-ping"></span>
                 <span className="text-red-500 font-bold">CODE: 601</span>
                 <span className="text-amber-500">
-                  {isAnalyzing ? "EMERGENCY DELIBERATION (審議中...)" : "READY FOR INPUT"}
+                  {isAnalyzing ? (currentResult?.isRealAi ? "REAL GEMINI AI THINKING (3キャラ思考中...)" : "EMERGENCY DELIBERATION (審議中...)") : "READY FOR INPUT"}
                 </span>
               </div>
               <div className="text-xs text-amber-500/70 hidden sm:block">
@@ -205,9 +250,16 @@ export default function App() {
             {/* 討論チャットログ */}
             {visibleLogs.length > 0 && (
               <div className="mb-8">
-                <h3 className="text-sm font-mono text-amber-500 mb-2 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-500" />
-                  MAGI STREAMING DISCUSSION LOG:
+                <h3 className="text-sm font-mono text-amber-500 mb-2 flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-500" />
+                    MAGI STREAMING DISCUSSION LOG:
+                  </span>
+                  {currentResult?.isRealAi && (
+                    <span className="text-xs text-emerald-400 font-bold flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" /> Generated by Real Gemini AI
+                    </span>
+                  )}
                 </h3>
                 <div className="discussion-box">
                   {visibleLogs.map((log, idx) => (
