@@ -5,7 +5,7 @@ import { AlertTriangle, Flame, ShieldAlert, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 // バージョン識別子
-const APP_VERSION = "v6.03 [FLEXIBLE-CHARACTER-TALK]";
+const APP_VERSION = "v6.04 [OPENROUTER-LLAMA3-FREE]";
 
 export default function App() {
   const [topic, setTopic] = useState('');
@@ -74,7 +74,7 @@ export default function App() {
             <p className="text-xs text-amber-500/80 tracking-widest font-mono flex items-center gap-2 mt-1">
               MAGI SYSTEM PARODY // PILOTS: SHINJI-01 / AYANAMI-00 / ASUKA-02
               <span className="text-emerald-400 font-bold bg-emerald-950/90 px-2 py-0.5 border border-emerald-500/50 rounded flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5" /> GEMINI DEEP AI ACTIVE
+                <Sparkles className="w-3.5 h-3.5" /> LLAMA-3 FREE AI ACTIVE
               </span>
             </p>
           </div>
@@ -166,9 +166,14 @@ export default function App() {
         {/* ディープ討論チャットストリーム */}
         {visibleLogs.length > 0 && (
           <div className="mb-8">
-            <h3 className="text-sm font-mono text-amber-500 mb-3 flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-amber-500" />
-              MAGI REALTIME DEEP DISCUSSION STREAM:
+            <h3 className="text-sm font-mono text-amber-500 mb-3 flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-500" />
+                MAGI REALTIME DEEP DISCUSSION STREAM:
+              </span>
+              <span className="text-xs text-emerald-400 font-bold flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5" /> OpenRouter Llama-3 Free AI
+              </span>
             </h3>
             <div className="discussion-box space-y-3 p-4">
               {visibleLogs.map((log, idx) => (
@@ -198,7 +203,7 @@ export default function App() {
       </main>
 
       <footer className="max-w-5xl mx-auto mt-12 text-center text-xs text-amber-500/50 font-mono border-t border-amber-500/20 pt-4">
-        逃げちゃダメシステム (ESCAPE DAME SYSTEM) {APP_VERSION} // POWERED BY GEMINI DEEP AI
+        逃げちゃダメシステム (ESCAPE DAME SYSTEM) {APP_VERSION} // POWERED BY OPENROUTER LLAMA-3 FREE AI
       </footer>
     </div>
   );
