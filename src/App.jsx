@@ -4,6 +4,9 @@ import { PILOTS, runDiscussion, logDecisionToChipHistory } from './services/disc
 import { AlertTriangle, Flame, ShieldAlert, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
+// バージョン識別子
+const APP_VERSION = "v6.02 [RANDOM-SPEAKERS]";
+
 export default function App() {
   const [topic, setTopic] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -17,7 +20,6 @@ export default function App() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [visibleLogs]);
 
-  // 審議（討論）開始
   const handleStartDeliberation = async (e) => {
     e.preventDefault();
     if (!topic.trim() || isAnalyzing) return;
@@ -30,10 +32,8 @@ export default function App() {
     setCurrentResult(null);
     setVisibleLogs([]);
 
-    // 1. Gemini AI による深掘りディベートの実行
     const result = await runDiscussion(topic);
 
-    // 2. 6ターンの深い対話ストリームのリアルタイム表示
     for (let i = 0; i < result.logs.length; i++) {
       await new Promise(resolve => setTimeout(resolve, 1400));
       setVisibleLogs(prev => [...prev, result.logs[i]]);
@@ -42,7 +42,6 @@ export default function App() {
       }
     }
 
-    // 3. 討論終了・判定提示
     await new Promise(resolve => setTimeout(resolve, 800));
     setCurrentResult(result);
     setIsAnalyzing(false);
@@ -61,14 +60,19 @@ export default function App() {
 
   return (
     <div className={`min-h-screen p-4 md:p-8 ${isAnalyzing ? 'alarm-active' : ''}`}>
-      {/* 極簡MAGI ヘッダー (メニューボタン完全撤去) */}
+      {/* MAGI ヘッダー (バージョン表示付き) */}
       <header className="max-w-5xl mx-auto mb-6 border-b-2 border-amber-500/50 pb-4 flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-3">
           <ShieldAlert className="w-10 h-10 text-red-500 animate-pulse" />
           <div>
-            <h1 className="glitch-title">逃げちゃダメシステム</h1>
+            <div className="flex items-baseline gap-3">
+              <h1 className="glitch-title">逃げちゃダメシステム</h1>
+              <span className="text-xs font-mono font-bold text-amber-400 bg-amber-950/80 px-2 py-0.5 border border-amber-500/40 rounded">
+                {APP_VERSION}
+              </span>
+            </div>
             <p className="text-xs text-amber-500/80 tracking-widest font-mono flex items-center gap-2 mt-1">
-              MAGI SYSTEM PARODY v6.01 // PILOTS: SHINJI-01 / AYANAMI-00 / ASUKA-02
+              MAGI SYSTEM PARODY // PILOTS: SHINJI-01 / AYANAMI-00 / ASUKA-02
               <span className="text-emerald-400 font-bold bg-emerald-950/90 px-2 py-0.5 border border-emerald-500/50 rounded flex items-center gap-1">
                 <Sparkles className="w-3.5 h-3.5" /> GEMINI DEEP AI ACTIVE
               </span>
@@ -92,7 +96,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* お題入力フォーム（操作はこれだけ！） */}
+        {/* お題入力フォーム */}
         <form onSubmit={handleStartDeliberation} className="mb-8">
           <div className="flex flex-col sm:flex-row gap-3">
             <input
@@ -159,7 +163,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* 6ターンのディープ討論チャットストリーム */}
+        {/* ディープ討論チャットストリーム */}
         {visibleLogs.length > 0 && (
           <div className="mb-8">
             <h3 className="text-sm font-mono text-amber-500 mb-3 flex items-center gap-2">
@@ -194,7 +198,7 @@ export default function App() {
       </main>
 
       <footer className="max-w-5xl mx-auto mt-12 text-center text-xs text-amber-500/50 font-mono border-t border-amber-500/20 pt-4">
-        逃げちゃダメシステム (ESCAPE DAME SYSTEM) // POWERED BY GEMINI DEEP AI
+        逃げちゃダメシステム (ESCAPE DAME SYSTEM) {APP_VERSION} // POWERED BY GEMINI DEEP AI
       </footer>
     </div>
   );
