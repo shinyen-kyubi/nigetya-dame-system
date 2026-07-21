@@ -5,7 +5,7 @@ import { AlertTriangle, Flame, ShieldAlert, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 // バージョン識別子
-const APP_VERSION = "v6.02 [RANDOM-SPEAKERS]";
+const APP_VERSION = "v6.03 [FLEXIBLE-CHARACTER-TALK]";
 
 export default function App() {
   const [topic, setTopic] = useState('');

@@ -1,4 +1,4 @@
-// シンジ・綾波・アスカの『逃げちゃダメシステム』議論エンジン (完全ランダム＆有機的リアルAI会話版)
+// シンジ・綾波・アスカの『逃げちゃダメシステム』議論エンジン (完全自由＆柔軟表現AI対話版)
 
 export const CHIP_HISTORY_PATH = "/Users/nakayamamichiyoshi/Library/CloudStorage/GoogleDrive-gotomichi5100@gmail.com/マイドライブ/チップくんの歴史/チップくんの歴史.txt";
 
@@ -16,19 +16,19 @@ export const PILOTS = {
   SHINJI: {
     id: 'SHINJI-01',
     name: '碇シンジ',
-    role: 'EVA-01 / 葛藤・繊細・逃避と責任感の挟み撃ち',
+    role: 'EVA-01 / 葛藤・繊細・現実の厳しさと本音',
     color: '#9b59b6',
   },
   AYANAMI: {
     id: 'AYANAMI-00',
     name: '綾波レイ',
-    role: 'EVA-00 / 冷徹論理・確率計算・本質を見抜く問いかけ',
+    role: 'EVA-00 / 感情を排した視点・本質を捉える問いかけ',
     color: '#3498db',
   },
   ASUKA: {
     id: 'ASUKA-02',
     name: '惣流・アスカ・ラングレー',
-    role: 'EVA-02 / 超強気・圧倒的自尊心・本音を突く鋭い喝',
+    role: 'EVA-02 / 超強気・圧倒的自尊心・背中を押す激しい本音',
     color: '#e74c3c',
   }
 };
@@ -36,41 +36,40 @@ export const PILOTS = {
 export async function runDiscussion(topic) {
   const apiKey = getApiKey();
 
-  // 第一声をランダムに決定（ASUKA, SHINJI, AYANAMI）
   const starterPilots = ['ASUKA', 'SHINJI', 'AYANAMI'];
   const firstSpeaker = starterPilots[Math.floor(Math.random() * starterPilots.length)];
 
   const systemPrompt = `
-あなたはアニメ「新世紀エヴァンゲリオン」の主要パイロット3人（アスカ、シンジ、綾波）になりきり、ユーザーから投げかけられたお題「${topic}」について、本気で深く自由かつランダムに討論するAIディベートエンジンです。
+あなたはアニメ「新世紀エヴァンゲリオン」の主要パイロット3人（アスカ、シンジ、綾波）になりきり、ユーザーから投げかけられたお題「${topic}」について、真剣・爆笑・皮肉・共感など多様な角度から本気でフリートーク議論するAI対話エンジンです。
 
-【重要：会話のスタート人物の指定】
-今回は「${firstSpeaker}」が一番最初に発言を開始してください！毎回同じ人物から始まらないように、会話の皮切りを「${firstSpeaker}」にしてください。
+【重要：定型文・決めゼリフの禁止と自由度】
+- 「あんたバカぁ！？」「逃げちゃダメだ」「あなたは死なないわ」などの決まり文句に固執しないでください。毎回同じ言葉を使うとつまらなくなります。
+- 決めゼリフはあえて使わなくて構いません。お題「${topic}」に対する具体的なエピソード、人間味あふれる例え話、皮肉、疑問、鋭いツッコミなどを自由に展開してください。
 
-【会話の自然さと深さのルール】
-1. 3人が本当にその場で生き生きと会話しているように、直前の発言に対して名前を呼んだり反論・共感・質問を挟んで対話させてください。
-2. 全5〜7ターンの自然な掛け合いで構成してください。
-3. 決め台詞（「あんたバカぁ！？」「逃げちゃダメだ…」「あなたは死なないわ」など）は状況に応じて自然に織り交ぜ、お題「${topic}」の内容（仕事、恋愛、食事、人生の選択など）について真剣に深掘りしてください。
+【キャラクターの方向性・質感（自由なニュアンス）】
+- アスカ (ASUKA): プライドが高く自信家。強気で口は悪いが、実は筋が通っていたり世話焼き。お題の甘えをバッサリ斬ったり、逆にノリノリで煽る。
+- シンジ (SHINJI): 繊細で考えすぎる性格。リスクや他人の目を気にしたり、自信がない本音をポロッと漏らす。時に「でもそれって…」と鋭い正論で反論することも。
+- 綾波 (AYANAMI): 独特の間と冷静さを持つ。世間の常識にとらわれない浮世離れした視点や、シュールで本質的な問いかけをする。
 
-【キャラクター設定】
-- ASUKA (アスカ): 攻撃的・超強気。「〜でしょ！」「あんたバカぁ！？」と喝を入れる。
-- SHINJI (シンジ): ウジウジ葛藤。「そんなの僕には…」「逃げちゃダメだけど…」と悩む。
-- AYANAMI (綾波): 冷静沈着。「問題ない」「確率は〜%」「なぜそこまで捉われるの？」と本質を突く。
+【会話の流れ】
+- 第一声は「${firstSpeaker}」から始めてください。
+- 3人が相手の発言をちゃんと聴いて、お互いに口喧嘩したり、意外な意気投合をしたり、お互いの意見を深掘りする自然な対話（5〜7ターン）を作成してください。
 
 【出力フォーマット】
-以下のJSON形式のみを出力してください：
+以下のJSON形式のみを出力してください（JSON以外のテキストは一切不要）：
 {
-  "isPassed": true または false (お題を実行・前進すべきならtrue, やめるべきならfalse),
-  "decisionTitle": "【可決】〇〇〇〇〇〇〇〇" または "【否決】〇〇〇〇〇〇〇〇",
+  "isPassed": true または false (お題を実行すべきならtrue, やめるべきならfalse),
+  "decisionTitle": "【可決】〇〇〇〇〇〇" または "【否決】〇〇〇〇〇〇",
   "asukaVote": "AGREE" または "DENY",
   "shinjiVote": "AGREE" または "DENY",
   "ayanamiVote": "AGREE" または "DENY",
   "logs": [
-    {"pilot": "${firstSpeaker}", "text": "${firstSpeaker}の第一声"},
-    {"pilot": "（次に自然に話すキャラ）", "text": "直前の発言を受けた返答"},
-    {"pilot": "（次に話すキャラ）", "text": "対話の深掘り"},
-    {"pilot": "（次に話すキャラ）", "text": "熱い対話"},
-    {"pilot": "（次に話すキャラ）", "text": "まとめに向かう発言"},
-    {"pilot": "（最終判定キャラ）", "text": "結びの発言"}
+    {"pilot": "${firstSpeaker}", "text": "第一声の自由な発言"},
+    {"pilot": "（次に話すキャラ）", "text": "相手に応じた自由な対話"},
+    {"pilot": "（次に話すキャラ）", "text": "対話の展開"},
+    {"pilot": "（次に話すキャラ）", "text": "自由な会話"},
+    {"pilot": "（次に話すキャラ）", "text": "まとめに向かう対話"},
+    {"pilot": "（最終判定キャラ）", "text": "締めくくりの発言"}
   ]
 }
 `;
@@ -113,35 +112,35 @@ export async function runDiscussion(topic) {
     throw new Error("Invalid response structure from Gemini API");
   } catch (err) {
     console.error("Gemini API call failed, running random fallback engine:", err);
-    return runRandomFallbackDiscussion(topic, firstSpeaker);
+    return runFlexibleFallbackDiscussion(topic, firstSpeaker);
   }
 }
 
-function runRandomFallbackDiscussion(topic, firstSpeaker) {
+function runFlexibleFallbackDiscussion(topic, firstSpeaker) {
   let logs = [];
   if (firstSpeaker === 'SHINJI') {
     logs = [
-      { pilot: 'SHINJI', text: `「あのさ…『${topic}』について悩んでるんだけど、僕には決められないよ…」`, vote: "DENY" },
-      { pilot: 'ASUKA', text: `「あんたバカぁ！？そんなの悩むまでもなく即決しなさいよ！いつまでウジウジしてんの！」`, vote: "AGREE" },
-      { pilot: 'AYANAMI', text: `「碇くん、迷いは判断を狂わせる。『${topic}』を実行しても、あなたは死なないわ。」`, vote: "AGREE" },
-      { pilot: 'SHINJI', text: `「う、うん…綾波レイにそう言われると、なんだか勇気が出てきたかも…」`, vote: "AGREE" },
-      { pilot: 'ASUKA', text: `「ちょっと、私の言うことは無視なの！？まあいいわ、とにかく前進しなさい！」`, vote: "AGREE" }
+      { pilot: 'SHINJI', text: `「ねえ『${topic}』ってどう思う？正直、僕には荷が重すぎる気がするんだけど…」`, vote: "DENY" },
+      { pilot: 'ASUKA', text: `「何言ってんのよ！失敗したらやり直せばいいだけでしょ。最初から負けること考えてどうすんの！」`, vote: "AGREE" },
+      { pilot: 'AYANAMI', text: `「碇くんの不安も理解できる。でも、何もしないことによる損失の方が大きいかもしれない。」`, vote: "AGREE" },
+      { pilot: 'SHINJI', text: `「二人がそう言うなら…確かにやってみないと何も変わらないよね。」`, vote: "AGREE" },
+      { pilot: 'ASUKA', text: `「そうよ！グダグダ言ってないで、行動で示しなさい！」`, vote: "AGREE" }
     ];
   } else if (firstSpeaker === 'AYANAMI') {
     logs = [
-      { pilot: 'AYANAMI', text: `「お題『${topic}』を検出。感情的な躊躇は非合理的。速やかに実行することを提案する。」`, vote: "AGREE" },
-      { pilot: 'SHINJI', text: `「えっ、綾波…いきなりそんな簡単に言わないでよ。失敗したら怖いじゃないか…」`, vote: "DENY" },
-      { pilot: 'ASUKA', text: `「シンジ！レイの言う通りよ！あんたのそのノロマな性格、いい加減にしなさい！」`, vote: "AGREE" },
-      { pilot: 'SHINJI', text: `「逃げちゃダメだ…逃げちゃダメだ…分かったよ、僕がやるよ！」`, vote: "AGREE" },
-      { pilot: 'AYANAMI', text: `「審議完了。これより『${topic}』へ移行する。」`, vote: "AGREE" }
+      { pilot: 'AYANAMI', text: `「『${topic}』について考えた。この行動による変化を、あなた自身はどう望んでいるの？」`, vote: "AGREE" },
+      { pilot: 'SHINJI', text: `「望んでいるかどうかも分からないんだ…ただ流されるのは嫌だけど、怖いんだよ。」`, vote: "DENY" },
+      { pilot: 'ASUKA', text: `「怖がって何もしないのが一番ダサイの！迷うくらいなら一歩踏み出しなさいよ！」`, vote: "AGREE" },
+      { pilot: 'SHINJI', text: `「…そうだよね。アスカの言う通り、自分で決めなきゃ意味がないや。」`, vote: "AGREE" },
+      { pilot: 'AYANAMI', text: `「あなたが決めたなら、それが正しい選択になる。」`, vote: "AGREE" }
     ];
   } else {
     logs = [
-      { pilot: 'ASUKA', text: `「ちょっとあんた！『${topic}』なんてつべこべ悩んでんじゃないわよ！私なら１秒で決めるわ！」`, vote: "AGREE" },
-      { pilot: 'SHINJI', text: `「そんなの無理だよアスカ…もっと慎重に考えないと…僕、怒られるの嫌なんだ…」`, vote: "DENY" },
-      { pilot: 'AYANAMI', text: `「統計的リスクは最小値。悩むこと自体が無意味。」`, vote: "AGREE" },
-      { pilot: 'ASUKA', text: `「ほらみなさい！エコノミーなレイだってそう言ってる！さっさと腹を括りなさい！」`, vote: "AGREE" },
-      { pilot: 'SHINJI', text: `「う…分かったよ、僕が乗るよ！」`, vote: "AGREE" }
+      { pilot: 'ASUKA', text: `「『${topic}』でしょ？こんなの迷う要素どこにあるのよ！私なら即答でゴーね！」`, vote: "AGREE" },
+      { pilot: 'SHINJI', text: `「アスカはいつも強気だけど、現実的な準備とかリスクはどうするのさ…」`, vote: "DENY" },
+      { pilot: 'AYANAMI', text: `「完璧な準備など存在しない。重要なのは、実行する決意そのもの。」`, vote: "AGREE" },
+      { pilot: 'ASUKA', text: `「レイも珍しく良いこと言うじゃない！シンジ、腹括りなさいよ！」`, vote: "AGREE" },
+      { pilot: 'SHINJI', text: `「分かったよ…僕も覚悟を決めてチャレンジしてみる。」`, vote: "AGREE" }
     ];
   }
 
