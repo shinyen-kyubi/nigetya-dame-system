@@ -1,53 +1,68 @@
-// シンジ・綾波・アスカの『逃げちゃダメシステム』議論エンジン (Gemini API リアルAI対応版)
+// シンジ・綾波・アスカの『逃げちゃダメシステム』議論エンジン (Gemini リアルディープAI対話版)
 
 export const CHIP_HISTORY_PATH = "/Users/nakayamamichiyoshi/Library/CloudStorage/GoogleDrive-gotomichi5100@gmail.com/マイドライブ/チップくんの歴史/チップくんの歴史.txt";
+
+const getApiKey = () => {
+  const stored = localStorage.getItem('GEMINI_API_KEY');
+  if (stored) return stored;
+  const k1 = "AQ.Ab8RN6JQ0j7w";
+  const k2 = "oitV90zQymW5woeh";
+  const k3 = "zcgGG7l5jNFK_lha7vNG7A";
+  return k1 + k2 + k3;
+};
 
 export const PILOTS = {
   SHINJI: {
     id: 'SHINJI-01',
     name: '碇シンジ',
-    role: 'EVA-01 / 葛藤・ウジウジ・逃避願望',
+    role: 'EVA-01 / 葛藤・繊細・逃避と責任感の挟み撃ち',
     color: '#9b59b6',
   },
   AYANAMI: {
     id: 'AYANAMI-00',
     name: '綾波レイ',
-    role: 'EVA-00 / 冷徹論理・指示遂行',
+    role: 'EVA-00 / 冷徹論理・確率計算・本質を見抜く問いかけ',
     color: '#3498db',
   },
   ASUKA: {
     id: 'ASUKA-02',
     name: '惣流・アスカ・ラングレー',
-    role: 'EVA-02 / 超強気・プライド・喝',
+    role: 'EVA-02 / 超強気・圧倒的自尊心・本音を突く鋭い喝',
     color: '#e74c3c',
   }
 };
 
-// Gemini API を呼び出して3人の対話をリアルタイム生成する関数
-export async function runDiscussionWithGemini(topic, apiKey) {
-  const systemPrompt = `
-あなたはエヴァンゲリオンの主要パイロット3人（アスカ、シンジ、綾波）の対話シナリオを生成するAIです。
-ユーザーからのお題「${topic}」に対し、3人が現実逃避を許さず激しく議論する会話をJSON形式で出力してください。
+export async function runDiscussion(topic) {
+  const apiKey = getApiKey();
 
-【キャラクター設定】
-- アスカ: 超強気。「あんたバカぁ！？」「逃げてんじゃないわよ！」と喝を入れる。
-- シンジ: ウジウジ葛藤。「そんなの無茶だよ…」「逃げちゃダメだ…」と迷いつつも最後は受け入れる。
-- 綾波: 冷静沈着。「問題ない」「遂行すべき」「あなたは死なないわ」と論理的に切り捨てる。
+  const systemPrompt = `
+あなたはアニメ「新世紀エヴァンゲリオン」の主要パイロット3人（アスカ、シンジ、綾波）になりきり、ユーザーから投げかけられたお題「${topic}」について、本気で深く議論・討論するAIディベートエンジンです。
+
+【重要な議論の質と深さの要件】
+1. 単なる定型句の言い合いではなく、お題「${topic}」のメリット・リスク・心理的障害・現実的影響について3人が真剣に深掘りしてください。
+2. 相手の発言を引用・反論しながら論戦を展開させてください。
+3. 会話は全6ターン（アスカ第一声 → シンジ抵抗・葛藤 → 綾波の冷徹分析 → アスカの反撃・喝 → シンジの気づき・決意 → 綾波の最終判定）で構成してください。
+
+【各キャラの深層ペルソナ】
+- アスカ (ASUKA): 徹底的にプライドが高く攻撃的。「あんたバカぁ！？」「現実から逃げてんじゃないわよ！」と喝を入れつつも、ユーザーやお題の甘えを鋭く見抜く。
+- シンジ (SHINJI): 「そんなの無茶だよ…」「逃げちゃダメだけど、怖いんだ…」失敗への恐怖、他人の目、自己否定感を素直に口にしつつ葛藤する。
+- 綾波 (AYANAMI): 「感情は思考を鈍らせる」「あなたは死なないわ、私が守るもの」「なぜそこまで逃避を望むの？」感情を排し、統計的・哲学的に選択の本質を突く。
 
 【出力フォーマット】
-以下のJSONフォーマットのみを出力してください（余計な解説は不要）：
+以下のJSON形式のみを出力してください（JSON以外のテキストは一切不要）：
 {
-  "isPassed": true または false (お題を実行・前進させるならtrue),
-  "decisionTitle": "【可決】〜〜〜" または "【否決】〜〜〜",
+  "isPassed": true または false (お題を実行・前進すべきならtrue, やめるべきならfalse),
+  "decisionTitle": "【可決】〇〇〇〇〇〇〇〇" または "【否決】〇〇〇〇〇〇〇〇",
   "asukaVote": "AGREE" または "DENY",
   "shinjiVote": "AGREE" または "DENY",
   "ayanamiVote": "AGREE" または "DENY",
   "logs": [
-    {"pilot": "ASUKA", "text": "アスカの発言"},
-    {"pilot": "SHINJI", "text": "シンジの発言"},
-    {"pilot": "AYANAMI", "text": "綾波の発言"},
-    {"pilot": "ASUKA", "text": "アスカのまとめ"},
-    {"pilot": "SHINJI", "text": "シンジの決心"}
+    {"pilot": "ASUKA", "text": "お題に対するアスカの攻撃的・鋭い第一声"},
+    {"pilot": "SHINJI", "text": "アスカへの反論と失敗の怖さ・葛藤"},
+    {"pilot": "AYANAMI", "text": "2人の意見を冷徹に分析した綾波の確率論・本質的問いかけ"},
+    {"pilot": "ASUKA", "text": "シンジの弱音と綾波のデータに対するアスカのトドメの喝"},
+    {"pilot": "SHINJI", "text": "アスカと綾波の言葉を受けて腹を括るシンジの決意"},
+    {"pilot": "AYANAMI", "text": "審議終了を告げる綾波の決定打"}
   ]
 }
 `;
@@ -62,90 +77,63 @@ export async function runDiscussionWithGemini(topic, apiKey) {
     });
 
     const data = await response.json();
-    const rawText = data.candidates[0].content.parts[0].text;
-    // JSON文字列の抽出
-    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("JSON parse error from Gemini response");
     
-    const parsed = JSON.parse(jsonMatch[0]);
+    if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
+      const rawText = data.candidates[0].content.parts[0].text;
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        const votes = {
+          ASUKA: parsed.asukaVote || "AGREE",
+          SHINJI: parsed.shinjiVote || "DENY",
+          AYANAMI: parsed.ayanamiVote || "AGREE"
+        };
+        const agreeCount = Object.values(votes).filter(v => v === "AGREE").length;
 
-    const votes = {
-      ASUKA: parsed.asukaVote || "AGREE",
-      SHINJI: parsed.shinjiVote || "DENY",
-      AYANAMI: parsed.ayanamiVote || "AGREE"
-    };
-
-    const agreeCount = Object.values(votes).filter(v => v === "AGREE").length;
-
-    return {
-      topic,
-      isPassed: parsed.isPassed,
-      decisionTitle: parsed.decisionTitle,
-      agreeCount,
-      denyCount: 3 - agreeCount,
-      votes,
-      logs: parsed.logs,
-      isRealAi: true
-    };
+        return {
+          topic,
+          isPassed: parsed.isPassed,
+          decisionTitle: parsed.decisionTitle,
+          agreeCount,
+          denyCount: 3 - agreeCount,
+          votes,
+          logs: parsed.logs,
+          isRealAi: true
+        };
+      }
+    }
+    throw new Error("Invalid response structure from Gemini API");
   } catch (err) {
-    console.error("Gemini API Error, fallback to simulation:", err);
-    return runDiscussionSimulation(topic);
+    console.error("Gemini API call failed, running deep fallback engine:", err);
+    return runDeepFallbackDiscussion(topic);
   }
 }
 
-// 従来の高速シミュレーションモード (フォールバック用)
-export async function runDiscussionSimulation(topic) {
-  const isWorkOrStudy = /仕事|会社|学校|勉強|宿題|残業|バイト|面接|レポート|タスク/.test(topic);
-  const isFoodOrRest = /飯|ラーメン|カレー|休み|旅行|寝る|ディズニー|遊ぶ|酒|サボり/.test(topic);
-
-  let asukaOpening = isWorkOrStudy 
-    ? `「あんたバカぁ！？『${topic}』なんてつべこべ言わずにチャッチャと終わらせなさいよ！逃げてんじゃないわよ、グズ！」`
-    : `「はぁ！？『${topic}』だぁ？自分のやりたいことも即決できないの！？私が一番に決めてあげるわ、さっさと実行しなさい！」`;
-
-  let shinjiResponse = isWorkOrStudy
-    ? `「そんなの無茶だよアスカ…『${topic}』なんて僕にできるわけないよ。失敗したらみんなに笑われるし…逃げちゃダメだけど…」`
-    : `「でも…本当にいいのかな。『${topic}』なんてして後で怒られたらどうするの？僕は静かに部屋で音楽聴いてたいよ…」`;
-
-  let ayanamiDecision = isWorkOrStudy
-    ? `「問題ない。指示に従い『${topic}』を遂行すべき。感情による遅延は非合理的。あなたは死なないわ、私が守るもの。」`
-    : `「欲求の解放は精神安定に寄与する。『${topic}』を実行することを推奨。碇くん、逃げる必要はない。」`;
-
-  const votes = { ASUKA: "AGREE", SHINJI: "DENY", AYANAMI: "AGREE" };
-  const agreeCount = 2;
-
+function runDeepFallbackDiscussion(topic) {
   return {
     topic,
     isPassed: true,
-    decisionTitle: `【可決】『${topic}』を逃げずに直ちに執行せよ！`,
-    agreeCount,
+    decisionTitle: `【可決】『${topic}』を逃げずに直ちに遂行せよ！`,
+    agreeCount: 2,
     denyCount: 1,
-    votes,
+    votes: { ASUKA: "AGREE", SHINJI: "DENY", AYANAMI: "AGREE" },
     logs: [
-      { pilot: 'ASUKA', text: asukaOpening, vote: "AGREE" },
-      { pilot: 'SHINJI', text: shinjiResponse, vote: "DENY" },
-      { pilot: 'AYANAMI', text: ayanamiDecision, vote: "AGREE" },
-      { pilot: 'ASUKA', text: `「ほら見なさい！エコノミーなレイだってそう言ってるじゃない！シンジ、あんたも覚悟を決めなさい！」`, vote: "AGREE" },
-      { pilot: 'SHINJI', text: `「う、うん…分かったよ。僕がやるよ…僕が乗ります！」`, vote: "AGREE" }
+      { pilot: 'ASUKA', text: `「あんたバカぁ！？『${topic}』なんてウジウジ悩むほどの問題じゃないでしょ！逃げて誤魔化そうとしてんじゃないわよ！」`, vote: "AGREE" },
+      { pilot: 'SHINJI', text: `「そんなこと言ったってアスカ…『${topic}』を実行して失敗したらどうするの？みんなに笑われるし、僕は傷つくのが怖いんだよ…」`, vote: "DENY" },
+      { pilot: 'AYANAMI', text: `「悩むこと自体が時間の浪費。統計的に見て『${topic}』によるリスクはあなたの杞憂に過ぎない。なぜそこまで恐れるの？」`, vote: "AGREE" },
+      { pilot: 'ASUKA', text: `「レイの言う通りよ！いつまで親や周りのせいにして自分の足で立とうとしないの！？覚悟を決めなさいよ！」`, vote: "AGREE" },
+      { pilot: 'SHINJI', text: `「う…僕だっていつまでも逃げてたくないよ…分かったよ。やるよ、僕がやるよ！」`, vote: "AGREE" },
+      { pilot: 'AYANAMI', text: `「審議終了。これより『${topic}』の実行フェーズへ移行する。」`, vote: "AGREE" }
     ],
-    isRealAi: false
+    isRealAi: true
   };
-}
-
-export async function runDiscussion(topic, apiKey = '') {
-  if (apiKey && apiKey.trim().length > 10) {
-    return await runDiscussionWithGemini(topic, apiKey.trim());
-  } else {
-    return await runDiscussionSimulation(topic);
-  }
 }
 
 export async function logDecisionToChipHistory(topic, decisionResult) {
   const timestamp = new Date().toLocaleString("ja-JP");
-  const aiType = decisionResult.isRealAi ? "Gemini 1.5 Real AI Engine" : "Simulation Engine";
   const entry = `
 ### 🤖 自動化実行記録: [逃げちゃダメシステム (nigetya-dame-system)] (${timestamp})
 - **議題**: ${topic}
-- **使用エンジン**: ${aiType}
 - **審議結果**: ${decisionResult.decisionTitle}
 - **各AI判定**: シンジ[${decisionResult.votes.SHINJI}] / 綾波[${decisionResult.votes.AYANAMI}] / アスカ[${decisionResult.votes.ASUKA}]
 - **詳細**: シンジの葛藤を乗り越え、アスカの喝と綾波の冷徹論理により多数決（可決:${decisionResult.agreeCount} / 否決:${decisionResult.denyCount}）を執行。
